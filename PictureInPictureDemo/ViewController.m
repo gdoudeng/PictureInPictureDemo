@@ -10,8 +10,8 @@
 
 @interface ViewController ()<AVPictureInPictureControllerDelegate>
 @property(strong,nonatomic) AVPictureInPictureController *pipVC;
-@property(strong,nonatomic) AVPlayerLayer*playerLayer;
-@property(strong,nonatomic) AVPlayer*player;
+@property(strong,nonatomic) AVPlayerLayer *playerLayer;
+@property(strong,nonatomic) AVPlayer *player;
 
 @end
 
@@ -34,37 +34,55 @@
     }
 }
 -(void)setupPictureInPicture{
-    NSURL *urlVideo = [[NSBundle mainBundle]URLForResource:@"v1" withExtension:@"MP4"];
+    NSURL *urlVideo = [[NSBundle mainBundle] URLForResource:@"v1" withExtension:@"MP4"];
     AVAsset *asset = [AVAsset assetWithURL:urlVideo];
     AVPlayerItem *playerItem = [AVPlayerItem playerItemWithAsset:asset];
+    
     self.player = [AVPlayer playerWithPlayerItem:playerItem];
+    
     self.playerLayer = [AVPlayerLayer playerLayerWithPlayer:self.player];
     self.playerLayer.frame = self.view.frame;
     self.playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+
+    // 添加自定义layer
+//    CALayer *pulseLayer_ = [CALayer layer];
+//    pulseLayer_.backgroundColor = [[UIColor redColor] CGColor];
+//    pulseLayer_.bounds = CGRectMake(0., 0., 80., 80.);
+//    pulseLayer_.cornerRadius = 12.;
+//    pulseLayer_.position = self.view.center;
+    
     [self.view.layer addSublayer:self.playerLayer];
+    
     //1.判断是否支持画中画功能
     if ([AVPictureInPictureController isPictureInPictureSupported]) {
         self.pipVC = [[AVPictureInPictureController alloc] initWithPlayerLayer:self.playerLayer];
         self.pipVC.delegate = self;
+    }else{
+        NSLog(@"不支持画中画");
     }
     [self.player play];
 }
 -(void)creatBtn{
     UIButton * switchBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [switchBtn setFrame:CGRectMake(20, 20, 50, 40)];
-    [switchBtn setBackgroundColor:[UIColor blackColor]];
-    [switchBtn setImage:[UIImage imageNamed:@"Classcenter_draw"] forState:UIControlStateNormal];
+    [switchBtn setBackgroundColor:[UIColor whiteColor]];
+    UIImage *image = [[UIImage imageNamed:@"Classcenter_draw"] imageWithTintColor:[UIColor blackColor]];
+    [switchBtn setImage:image forState:UIControlStateNormal];
     [switchBtn addTarget:self action:@selector(switchBtnClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview: switchBtn];
 }
 -(void)switchBtnClick:(UIButton*)sender{
-    //判断当前是否为画中画
-    if (self.pipVC.isPictureInPictureActive) {
-        //关闭画中画
-        [self.pipVC stopPictureInPicture];
-    } else {
-        //开始画中画
-        [self.pipVC startPictureInPicture];
+    if([AVPictureInPictureController isPictureInPictureSupported]){
+        //判断当前是否为画中画
+        if (self.pipVC.isPictureInPictureActive) {
+            //关闭画中画
+            [self.pipVC stopPictureInPicture];
+        } else {
+            //开始画中画
+            [self.pipVC startPictureInPicture];
+        }
+    }else{
+        NSLog(@"不支持画中画");
     }
 }
 // 即将开启画中画
